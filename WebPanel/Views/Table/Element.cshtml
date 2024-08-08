@@ -1,0 +1,333 @@
+﻿@using WebPanel.Domain.Enum;
+@using System.ComponentModel.DataAnnotations;
+@model WebPanel.Domain.Entity.TableElement
+@{
+    ViewData["Title"] = $"Полная информация об элементе";
+
+}
+
+    
+@{
+    string needColor = "text-success";
+    string red = "text-danger";
+    string green = "text-success";
+    string orange = "text-warning";
+            switch (Model.Color)
+            {
+                case Colors.Red:
+                    needColor = red;
+                    break;
+
+                case Colors.Green:
+                    needColor = green;
+                    break;
+
+                case Colors.Yellow:
+                    needColor = orange;
+                    break;
+            }
+            }
+<div class="element-part ms-4" style="max-width: 570px; min-height: 100px; margin-top: 40px;">
+    <h3 class="mb-3">@ViewData["Title"] </h3>
+    @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                                {
+            <a target="_blank" role="button" class="btn btn-success"
+               href="/Export/Element/@Model.Id">
+                Скачать <i class="bi bi-database-add"></i>
+            </a>
+
+        <a role="button" class="btn btn-outline-danger"
+           onclick="openModal(@Model.TableId,@Model.Id)">
+            Удалить
+        </a>
+        <a role="button" class="btn btn-outline-secondary"
+           href="/Table/@ViewData["TableId"]/Edit?elementId=@Model.Id">
+            Изменить
+        </a>
+                                }
+
+</div>
+
+    <div class="m-4">
+        <div class="element-part">
+        <h2>Информация</h2>
+        <div class="square-container">
+
+            <div class="square text-center" style="">
+                <i class="bi bi-list-ol text-primary" style="font-size: 3rem;"></i>
+                <h5>ID: @Model.Id</h5>
+            </div>
+
+            <div class="rectangle text-center">
+                <h4>@Model.FullName</h4>
+            </div>
+
+            <div class="square text-center" style="">
+                <i class="bi bi-palette-fill @needColor" style="font-size: 3rem;"></i>
+                <h5>Цвет</h5>
+            </div>
+            
+            @*@if (Model.PhoneNumber != null)
+            {
+                <div class="square text-center">
+                    <i class="bi bi-telephone text-primary" style="font-size: 3rem;"></i>
+                <h6>@Model.PhoneNumber</h6>
+            </div>
+            }*@
+
+            @if ((int)Model.Gender != 0)
+            {
+                <div class="square text-center">
+                    @if ((int)Model.Gender == 1)
+                    {
+                        <i class="bi bi-gender-male text-primary" style="font-size: 3rem;"></i>
+                        <h5>
+                            Мужчина
+                        </h5>
+                    }
+                    @if ((int)Model.Gender == 2)
+                    {
+                        <i class="bi bi-gender-female text-primary" style="font-size: 3rem;"></i>
+                        <h5>
+                            Женщина
+                        </h5>
+                }
+            </div>
+            }
+
+            <div class="square text-center">
+                @if (Model.InformationTransferred)
+                {
+                    <i class="bi bi-check2-all text-primary" style="font-size: 3rem;"></i>
+                    <h5>
+                        Передано
+                    </h5>
+                }
+                @if (!Model.InformationTransferred)
+                {
+                    <i class="bi bi-x-square text-primary" style="font-size: 3rem;"></i>
+                    <h5>
+                        Не передано
+                    </h5>
+                }
+            </div>
+
+            @if (Model.Link != null)
+            {
+                <div class="square text-center">
+                    <a role="button" class="file-input btn btn-outline-secondary"
+                   href="http://@Model.Link" target="_blank">
+                </a>
+                <i class="bi bi-box-arrow-up-right text-primary" style="font-size: 3rem;"></i>
+                <h5>Ссылка</h5>
+            </div>
+            }
+
+            @if (Model.City != null)
+            {
+                <div class="rectangle text-center">
+                    <i class="bi bi-houses text-primary" style="font-size: 3rem;"></i>
+                    <h5>@Model.City</h5>
+                </div>
+            }
+
+            @if (Model.DateOfBirth != null)
+            {
+            <div class="rectangle text-center" style="width: 220px;">
+                <h4>Дата рождения</h4>
+                <h5>@Model.DateOfBirth?.Date.ToString("D")</h5>
+            </div>
+            }
+
+        </div>
+        </div>
+
+
+    <div class="element-part">
+        <div class="row">
+            <div class="col-5">
+                <h2>Негативные эмоц. состояния</h2>
+                    
+                    <div class="rectangle text-center" style="
+overflow: auto;
+justify-content: start;
+max-width: 70%;
+height: 200px;
+max-height: 800px;">
+                        <h5 style="margin: 10px;">@Model.NegativeEmotStates</h5>
+                    </div>
+            </div>
+
+            <div class="col-5">
+                <h2>Интересы</h2>
+
+                    <div class="rectangle text-center" style="
+overflow: auto;
+justify-content: start;
+max-width: 70%;
+height: 200px;
+max-height: 800px;">
+                        <h5 style="margin: 10px;">@Model.Interests</h5>
+                    </div>
+            </div>
+        </div>
+
+        <h2>Примечание</h2>
+
+        <div class="rectangle text-center" style="
+overflow: auto;
+justify-content:start; 
+max-width: 70%;
+height: 200px;
+max-height: 800px;">
+
+                <span class="text-break" style="margin: 20px;">@Model.Note</span>
+            </div>
+    </div>
+
+
+          
+        <div class="element-part">
+        <div class="row">
+            <div class="col-5">
+                         <h2 >Автор</h2>
+                        <div class="square-container">
+                            <div class="square text-center" style="">
+                                <i class="bi bi-person-circle text-primary" style="font-size: 3rem;"></i>
+                                <h5 >@Model.OwnerFullName</h5>
+                            </div>
+                            <div class="rectangle text-center" style="width: 220px;">
+                                <h4>Дата обнаружения</h4>
+                                <h5>@Model.DateOfDetection</h5>
+                            </div>
+                        </div>
+            </div>
+            <div class="col-5">
+                <h2>Последнее редактирование</h2>
+                <div class="square-container">
+                    <div class="square text-center">
+                        <i class="bi bi-person-circle text-primary" style="font-size: 3rem;"></i>
+                        <h5>@Model.OwnerFullName</h5>
+                    </div>
+                    <div class="rectangle text-center">
+                        <h4>Дата редактирования</h4>
+                        <h5>@Model.DateOfChanges</h5>
+                    </div>
+                </div>
+             </div>
+        </div>
+        </div>
+
+        <div class="element-part">
+            @{
+                ViewData["ElementId"] = Model.Id;
+                ViewData["TableId"] = Model.TableId;
+                ViewData["FileType"] = "1024";
+            }
+            @Html.Partial("_OtherModelListPartial", WebPanel.Misc.StaticDataHelper.GetFiles(Model.ConnectionsId),ViewData)
+        </div>
+
+        <div class="element-part">
+            @{
+                ViewData["ElementId"] = Model.Id;
+                ViewData["TableId"] = Model.TableId;
+                ViewData["FileType"] = "2048";
+            }
+            @Html.Partial("_OtherModelListPartial", WebPanel.Misc.StaticDataHelper.GetFiles(Model.PictureId),ViewData)
+        </div>
+
+        <div class="element-part">
+            @{
+                ViewData["ElementId"] = Model.Id;
+                ViewData["TableId"] = Model.TableId;
+                ViewData["FileType"] = "4096";
+            }
+            @Html.Partial("_OtherModelListPartial", WebPanel.Misc.StaticDataHelper.GetFiles(Model.IllegalContentId),ViewData)
+        </div>
+
+        <div class="element-part">
+        @{
+            ViewData["ElementId"] = Model.Id;
+            ViewData["TableId"] = Model.TableId;
+            ViewData["FileType"] = "8192";
+        }
+        @Html.Partial("_OtherModelListPartial", WebPanel.Misc.StaticDataHelper.GetFiles(Model.LandingId),ViewData)
+        </div>
+
+    </div>
+
+
+
+@*Модальное окна для подтверждения удаления элемента*@
+<div class="modal fade" role="dialog" id="deleteConfirmationModal" aria-labelledby="deleteConfirmationModal" aria-hidden="true" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Подтверждение удаления</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить элемент с Id: <span id="elementId"></span>?</p>
+                <div id="testData"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Отмена</button>
+                <a role="button" class="btn btn-outline-danger" id="deleteButton" )>
+                    Удалить
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+ @*Модальное окна для подтверждения удаления файла*@
+<div class="modal fade" role="dialog" id="deleteFileConfirmationModal" aria-labelledby="deleteFileConfirmationModal" aria-hidden="true" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Подтверждение удаления</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить файл с Id: <span id="elementIdDouble"></span>?</p>
+                <div id="testData"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Отмена</button>
+                <a role="button" class="btn btn-outline-danger" id="deleteFileButton" )>
+                    Удалить
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <script>
+    // Открытие модального окна для подтверждения удаления элемента
+    function openModal(tableId, elementId) {
+        var deleteButton = document.getElementById('deleteButton');
+        deleteButton.href = '/Table/' + tableId + '/Delete/' + elementId; // Устанавливаем значение уникального идентификатора в href кнопки "Удалить"
+        // href="Url.Action("action","controller","")
+        
+        $('#elementId').text(elementId); // Устанавливаем значение уникального идентификатора внутри модального окна
+        $('#deleteConfirmationModal').modal('show'); // Открываем модальное окно
+    }
+
+
+    // Открытие модального окна для подтверждения удаления файла
+    function openModalFile(fileId) {
+        var deleteButton = document.getElementById('deleteFileButton');
+        deleteButton.href = '/Table/' + @Model.TableId + '/' + @Model.Id + '/' + fileId + '/DeleteFile'; // Устанавливаем значение уникального идентификатора в href кнопки "Удалить"
+        // href="Url.Action("action","controller","")
+
+        $('#elementIdDouble').text(fileId); // Устанавливаем значение уникального идентификатора внутри модального окна
+        $('#deleteFileConfirmationModal').modal('show'); // Открываем модальное окно
+    }
+    </script>
+
+
+
+
+

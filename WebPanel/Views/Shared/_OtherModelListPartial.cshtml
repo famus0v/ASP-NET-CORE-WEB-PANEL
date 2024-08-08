@@ -1,0 +1,233 @@
+﻿@model List<FileModel>
+
+@{
+    string globalFileType = ViewData["FileType"]?.ToString();
+}
+
+@if (globalFileType == "1024")
+{
+    <h2>Связи</h2>
+}
+@if (globalFileType == "2048")
+{
+    <h2>Портрет</h2>
+}
+@if (globalFileType == "4096")
+{
+    <h2>Признаки противоправного контента</h2>
+}
+
+@if (globalFileType == "8192")
+{
+    <h2>Выгрузка</h2>
+}
+
+
+<div id="section-@ViewData["FileType"]" class="file-container">
+    @if(Model != null)
+@foreach(var file in Model){
+    <div class="square text-center">
+                <a class="close-button" onclick="openModalFile(@file.Id)">
+                    <i class="bi bi-trash-fill" style="color: white;"></i>
+                </a>
+                @if (User.IsInRole("Admin") || User.IsInRole("Moderator")){
+                    <a role="button" class="file-input btn btn-outline-secondary" style="z-index: 1;"
+               href="@Url.Action("DownloadFile", "Table",
+               new {
+                   filePath = System.Net.WebUtility.UrlEncode(file.FilePath),
+                   fileName = System.Net.WebUtility.UrlEncode(file.FileName)})">
+            </a>
+                }
+
+        <i class="bi bi-file-earmark" style="font-size: 3rem;"></i>
+        <h5 class="long-text-file">@file.FileName</h5>
+    </div>
+            
+}
+
+    <div id="error-square-@globalFileType" class="square text-center" style="display: none;">
+        <i class="bi bi-exclamation-circle text-danger" style="font-size: 3rem;"></i>
+        <h5 class="text-danger">Ошибка</h5>
+    </div>
+
+    <div class="square text-center" id="loading-square-@globalFileType" style="display: none;">
+        <div class="spinner-container">
+            <div id="spinner-@globalFileType" class="spinner-border text-secondary" role="status" style="display: none;">
+            </div>
+        </div>
+        <span id="progress-text-@globalFileType"></span>
+    </div>
+
+    @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+    {
+        <form method="post" enctype="multipart/form-data">
+            <div class="square text-center">
+            <input type="file" id="file-input-@globalFileType" class="file-input">
+            <i class="bi bi-plus" style="font-size: 3rem;"></i>
+            <h5>Добавить</h5>
+        </div>
+    </form>
+    }
+
+ </div>
+
+
+<script>
+
+    document.getElementById('file-input-' + @globalFileType).addEventListener('change', function (event) {
+        event.preventDefault();         // Предотвращаем отправку формы по умолчанию
+        startLoading(@globalFileType);                 // Активируем спиннер
+
+        var file = event.target.files[0];
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/Table/' + @ViewData["TableId"]+'/' + @ViewData["ElementId"]+'/AddFile/' + @globalFileType, true);
+
+        xhr.upload.onprogress = function (e) {
+            if (e.lengthComputable) {
+                var loadedBytes = e.loaded;
+                var fileSize = e.total;
+
+                if (loadedBytes == fileSize) {
+                    document.getElementById('progress-text-' + @globalFileType).innerText = "сохранение на сервер..."; return;
+                }
+
+                document.getElementById('progress-text-' + @globalFileType).innerText = formatBytes(loadedBytes) + ' / ' + formatBytes(fileSize);
+            }
+        };
+
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                var response = JSON.parse(xhr.responseText);
+                // Загрузка успешно завершена
+
+                    if (response.isError == "true") {
+                        isError(@globalFileType);
+                        return;
+                    }
+
+                    if (response.redirectUrl) {
+                    window.location.href = response.redirectUrl;
+                    window.location.reload();
+                    }
+            } else {
+                // Произошла ошибка при загрузке файла
+                isError(@globalFileType);
+            }
+        }; 
+
+        xhr.onerror = function () {
+            // Произошла ошибка при выполнении запроса
+            isError(@globalFileType);
+        };
+
+        var formData = new FormData();
+        formData.append('file', file);
+
+        xhr.send(formData);
+
+
+
+            //if (e.lengthComputable) {
+            //    var percentComplete = (e.loaded / e.total) * 100;
+            //    document.getElementById('progress').style.display = 'block';
+            //    document.getElementById('progressBar').style.width = percentComplete + '%';
+            //}
+        
+
+    });
+
+    function isError(fileType) {
+        document.getElementById('spinner-' + fileType).style.display = 'none';
+        document.getElementById('loading-square-' + fileType).style.display = 'none';
+
+        document.getElementById('error-square-' + fileType).style.display = 'block';
+    }
+
+    function startLoading(fileType) {
+        document.getElementById('error-square-' + fileType).style.display = 'none';
+
+        document.getElementById('spinner-' + fileType).style.display = 'block';
+        document.getElementById('loading-square-' + fileType).style.display = 'block';
+    }
+
+    function formatBytes(bytes) {
+        var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        if (bytes == 0) return '0 Byte';
+        var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+        return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+    }
+
+    
+
+    window.addEventListener('load', function () {
+        // Проверяем URL на наличие якоря
+        if (window.location.hash) {
+            // Получаем идентификатор элемента из URL
+            var hash = window.location.hash.substring(1);
+
+            // Перемещаемся к элементу с помощью метода scrollIntoView
+            var element = document.getElementById(hash);
+            if (element) {
+                element.scrollIntoView();
+            }
+        }
+    });
+     
+
+
+    //document.getElementById('file-input').addEventListener('change', function (event) {
+    //    event.preventDefault(); // Предотвращаем отправку формы по умолчанию
+    //    document.getElementById('error-square').style.display = 'none';
+    //    var file = event.target.files[0];
+
+    //    var formData = new FormData();
+    //    formData.append('file', file);
+
+    //    document.getElementById('spinner').style.display = 'block';
+    //    document.getElementById('new-square').style.display = 'block';
+
+    //    var reader = new FileReader();
+    //    reader.onload = function (e) {
+
+    //        fetch('/Table/' + @ViewData["TableId"]+'/' + @ViewData["ElementId"]+'/AddFile', {
+    //            method: 'POST',
+    //            body: formData
+    //        })
+    //            .then(response => response.json())
+    //            .then(data => {
+    //                console.log('Ответ от контроллера:', data);
+
+    //                if (data.isError == "true") {
+    //                    isError();
+    //                    return;
+    //                }
+
+    //                if (data.includes("/Table")) {
+    //                    window.location.replace(data);
+    //                }
+    //            })
+    //            .catch(error => {
+    //                console.error('Ошибка:', error);
+    //                isError();
+    //            });
+    //    };
+
+    //    reader.onprogress = function (e) {
+    //        if (e.lengthComputable) {
+    //            var loadedBytes = e.loaded;
+    //            var fileSize = file.size;
+    //            if(loadedBytes == fileSize){
+    //                document.getElementById('progress-text').innerText = "сохранение на сервер...";
+    //                return;
+    //            }
+    //            document.getElementById('progress-text').innerText = formatBytes(loadedBytes) + ' / ' + formatBytes(fileSize);
+    //        }
+    //    };
+
+    //    reader.readAsArrayBuffer(file);
+    //});
+
+    
+
+</script>

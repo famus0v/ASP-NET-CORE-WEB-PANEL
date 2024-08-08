@@ -1,0 +1,50 @@
+﻿@model WebPanel.Domain.ViewModels.LoginViewModel
+
+@{
+    Layout = "_Layout";
+    ViewBag.Title = "Вход в аккаунт";
+}
+
+
+<div class="element-part" style="width: 400px; min-height: 300px; margin: 0 auto; margin-top: 180px;">
+  <div class="spinner-container" style="transform: translate(164px, 99px); display: none;">
+    <div id="spinner" class="spinner-border text-primary" role="status"></div>
+        <h3 style="transform: translate(-80px, 0px);">Авторизация...</h3>
+  </div>
+
+  <div id="form-card" style="display: block;">
+    <h3 class="mb-0 text-center ParagraphHome">Вход в аккаунт</h3>
+
+    <form autocomplete="on" method="post" asp-controller="Account" asp-action="Login" id="login-form">
+      <div asp-validation-summary="All" style="font-size: 23px;" class="text-danger text-center"></div>
+
+      <div class="form-floating mb-3">
+        <input asp-for="Name" class="form-control" id="floatingInput" placeholder="Логин">
+        <label for="floatingInput">Логин</label>
+      </div>
+      <div class="form-floating">
+        <input autocomplete="new-password" asp-for="Password" type="password" class="form-control" id="floatingPassword" placeholder="Пароль">
+        <label for="floatingPassword">Пароль</label>
+      </div>
+      <div class="d-grid gap-2 mt-4">
+        <button type="submit" class="btn btn-primary" id="login-button">Войти</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.getElementById('login-button').addEventListener('click', function(event) {
+    event.preventDefault(); // Отменяем отправку формы
+
+    var spinnerContainer = document.querySelector('.spinner-container');
+        var loginForm = document.getElementById('form-card');
+
+    spinnerContainer.style.display = 'block'; // Показываем спиннер
+    loginForm.style.display = 'none'; // Скрываем форму
+
+    setTimeout(function() {
+      document.getElementById('login-form').submit(); // Отправляем форму после задержки
+    }, 1200); // Задержка в 5 секунд (5000 миллисекунд)
+  });
+</script>

@@ -1,0 +1,42 @@
+﻿@model List<WebPanel.Domain.Entity.Account>
+@{
+    ViewData["Title"] = "Список аккаунтов";
+
+}
+<h1>@ViewData["Title"]</h1>
+
+<a role="button" class="me-2 btn btn-primary"
+   href="/Account/Create">
+    Создать аккаунт <i class="bi bi-database-add"></i>
+</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Полное имя</th>
+            <th scope="col">Логин</th>
+            <th scope="col">Роль</th>
+            <th scope="col">Последняя активность</th>
+            <th scope="col">Кол-во созданных элементов</th>
+            <th scope="col">&&</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var account in Model){
+        <tr>
+            <th scope="row">@account.Id</th>
+                <td>@account.FullName</td>
+                <td>@account.Name</td>
+                <td>@account.Role</td>
+                <td>@account.LastActivity</td>
+                <td>@WebPanel.Misc.StaticDataHelper.GetUserElementsCount(account.Name)</td>
+                <td>
+                    <form method="post" asp-controller="Account" asp-action="Delete" asp-route-name="@account.Name">
+                        <input class="btn btn-danger rounded" type="submit" value="Удалить" />
+                    </form>
+                </td>
+        </tr>
+        }
+    </tbody>
+</table>

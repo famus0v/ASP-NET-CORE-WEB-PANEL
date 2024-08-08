@@ -1,0 +1,181 @@
+﻿@model List<WebPanel.Domain.Entity.BaseTable>
+@{
+    ViewData["Title"] = "Список таблиц";
+}
+
+<meta name="viewport" content="width=device-width" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.5.1/chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/1.1.1/chartjs-plugin-zoom.min.js"></script>
+
+<div class="element-part" style="max-width: 570px; min-height: 100px; margin-top: 40px;">
+<h3 class="mb-3">@ViewData["Title"]</h3>
+
+@if (User.IsInRole("Admin"))
+{
+    <a role="button" class="btn btn-success"
+    href="/OtherTables/Create">
+        Добавить таблицу +
+    </a>
+}
+
+</div>
+
+<div class="d-grid gap-2">
+    @foreach (var item in Model)
+    {
+        <div class="row mt-2">
+                <a role="button" class="btn btn-primary"
+                   href="/Table/@item.Id">
+                    @item.TableDisplayName >> @item.Id
+                </a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a role="button" class="btn btn-outline-danger"
+                       onclick="openModal(@item.Id)">
+                        Удалить
+                    </a>
+                }
+            </div>
+    }
+</div>
+
+
+
+
+<div class="modal fade" role="dialog" id="deleteConfirmationModal" aria-labelledby="deleteConfirmationModal" aria-hidden="true" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Подтверждение удаления</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить таблицу с Id: <span id="elementId"></span>?</p>
+                <p>Все элементы и файлы внутри этой таблицы будут удалены!</p>
+                <div id="testData"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Отмена</button>
+                <a role="button" class="btn btn-outline-danger" id="deleteButton" )>
+                    Удалить
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<div class="element-part mt-5">
+    <h2>График</h2>
+    <div class="chart-container">
+        <canvas id="myChart"></canvas>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var ctx = document.getElementById("myChart").getContext("2d");
+
+        var chartData1 = @Json.Serialize(WebPanel.Misc.StaticDataHelper.GetColorCount(WebPanel.Domain.Enum.Colors.Red));
+        var chartData2 = @Json.Serialize(WebPanel.Misc.StaticDataHelper.GetColorCount(WebPanel.Domain.Enum.Colors.Green));
+        var chartData3 = @Json.Serialize(WebPanel.Misc.StaticDataHelper.GetColorCount(WebPanel.Domain.Enum.Colors.Yellow));
+
+        var labels = @Json.Serialize(WebPanel.Misc.StaticDataHelper.GetColorTimes(WebPanel.Domain.Enum.Colors.Red));
+        //for (var i = 1; i <= chartData.length; i++) {
+        //    labels.push("Day " + i);
+        //}
+
+        var dataset1 = {
+            label: 'Красный',
+            data: chartData1,
+            backgroundColor: 'rgba(255, 0, 0, 0.2)',
+            borderColor: 'rgba(255, 0, 0, 1)',
+            borderWidth: 1
+        };
+
+        var dataset2 = {
+            label: 'Зелёный',
+            data: chartData2, // Данные для второй полосы
+            backgroundColor: 'rgba(0, 255, 0, 0.2)',
+            borderColor: 'rgba(0, 255, 0, 1)',
+            borderWidth: 1
+        };
+
+        var dataset3 = {
+            label: 'Жёлтый',
+            data: chartData3, // Данные для второй полосы
+            backgroundColor: 'rgba(255, 255, 0, 0.2)',
+            borderColor: 'rgba(255, 255, 0, 1)',
+            borderWidth: 1
+        };
+
+        var chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [dataset1, dataset2, dataset3]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    zoom: {
+                        pan: {
+                            enabled: true,
+                            mode: 'x'
+                        },
+                        zoom: {
+                            wheel: {
+                                enabled: true,
+                            },
+                            drag: {
+                                enabled: true,
+                            },
+                            pinch: {
+                                enabled: true,
+                            },
+                            mode: 'x',
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Красный',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                size: 14
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+
+
+
+
+
+    function openModal(tableId) {
+            var deleteButton = document.getElementById('deleteButton');
+        deleteButton.href = '/OtherTables/Delete/' + tableId; // Устанавливаем значение уникального идентификатора в href кнопки "Удалить"
+            // href="Url.Action("action","controller","")
+
+            $('#elementId').text(tableId); // Устанавливаем значение уникального идентификатора внутри модального окна
+            $('#deleteConfirmationModal').modal('show'); // Открываем модальное окно
+        }
+</script>

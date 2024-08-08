@@ -1,0 +1,22 @@
+﻿@model WebPanel.Domain.Entity.BaseTable
+@{
+    ViewData["Title"] = "Создания новой таблицы";
+    
+}
+<h1>@ViewData["TableId"]</h1>
+<div class="modal-content">
+    <form asp-controller="OtherTables" asp-action="Create" enctype="multipart/form-data">
+            <div class="vstack gap-1 col-md-3 mx-auto">
+
+            <input asp-for="Id" hidden />
+            <div asp-validation-summary="All" class="text-danger text-center"></div>
+
+            <label asp-for="TableDisplayName"></label>
+            <input class="form-control" asp-for="TableDisplayName" />
+            <span class="text-center text-danger" asp-validation-for="TableDisplayName"></span>
+
+
+                <button type="submit" class="mt-3 mb-3 btn btn-outline-success">Добавить</button>
+            </div>
+        </form>
+</div>

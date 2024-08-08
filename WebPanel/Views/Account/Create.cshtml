@@ -1,0 +1,46 @@
+﻿@model WebPanel.Domain.Entity.Account
+@{
+    ViewData["Title"] = "Создания нового аккаунта";
+    
+}
+
+<div class="element-part" style="max-width: 570px; min-height: 300px; margin: 0 auto; margin-top: 40px;">
+    <h3>@ViewData["Title"]</h3>
+    <form asp-controller="Account" asp-action="Create" enctype="multipart/form-data">
+        <input asp-for="Id" hidden />
+        <div asp-validation-summary="All" class="text-danger text-center"></div>
+
+        <div class="vstack gap-1 mx-auto">
+
+            <div class="mb-2 mt-3 form-floating">
+                <input class="form-control" asp-for="Name" />
+                <label asp-for="Name"></label>
+                <span class="text-center text-danger" asp-validation-for="Name"></span>
+            </div>
+                
+
+            <div class="mb-2 form-floating">
+                <input class="form-control" asp-for="FullName" />
+                <label asp-for="FullName"></label>
+                <span class="text-center text-danger" asp-validation-for="FullName"></span>
+            </div>
+
+            <div class="mb-2 form-floating">
+                <input class="form-control" asp-for="Password" />
+                <label asp-for="Password"></label>
+                <span class="text-center text-danger" asp-validation-for="Password"></span>
+            </div>
+
+            <div class="mb-2 form-floating">
+                <select class="form-select" asp-for="Role">
+                    <option value="0">Пользователь</option>
+                    <option value="1">Модератор</option>
+                    <option value="2">Администратор</option>
+                </select>
+                <label asp-for="Role"></label>
+            </div>
+
+            <button type="submit" class="mb-3 btn btn-outline-success">Добавить</button>
+        </div>
+    </form>
+</div>

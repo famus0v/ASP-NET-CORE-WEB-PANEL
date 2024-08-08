@@ -1,0 +1,106 @@
+﻿@model WebPanel.Domain.Entity.TableElement
+@{
+    ViewData["Title"] = "Редактирование элемента таблицы";
+}
+
+<div class="element-part" style="max-width: 570px; min-height: 300px; margin: 0 auto; margin-top: 40px;">
+    <h3>@ViewData["Title"] — @ViewData["TableId"]</h3>
+    <form asp-route-tableId='@ViewData["TableId"]' asp-action="Edit" enctype="multipart/form-data">
+            <input asp-for="Id" hidden />
+            <input asp-for="TableId" hidden />
+        <div asp-validation-summary="All" style="font-size: 18px;" class="text-danger"></div>
+
+        <div class="vstack gap-1  mx-auto">
+
+            <div class="mb-2 mt-3 form-floating">
+                <input class="form-control" asp-for="FullName" />
+                <label asp-for="FullName"></label>
+                <span class="text-center text-danger" asp-validation-for="FullName"></span>
+            </div>
+
+            <div class="mb-2 row g-2 ">
+
+                <div class="col-md">
+                    <div class="form-floating">
+                        <input class="form-control" asp-for="City" />
+                        <label asp-for="City"></label>
+                        <span class="text-center text-danger" asp-validation-for="City"></span>
+                    </div>
+                </div>
+
+                <div class="col-md">
+                    <div class="form-floating">
+                        <select class="form-select" asp-for="Gender">
+                            <option value="0">Не выбран</option>
+                            <option value="1">Мужской</option>
+                            <option value="2">Женский</option>
+                        </select>
+                        <label asp-for="Gender"></label>
+                    </div>
+                </div>
+
+                <div class="col-md">
+                    <div class="form-floating">
+                        <select class="form-select" asp-for="Color">
+                            <option value="0">Красный</option>
+                            <option value="1">Зелёный</option>
+                            <option value="2">Жёлтый</option>
+                        </select>
+                        <label asp-for="Color"></label>
+                    </div>
+                </div>
+
+            </div>
+
+            @*<div class="mb-2 form-floating">
+                <input class="form-control" asp-for="PhoneNumber" />
+                <label asp-for="PhoneNumber"></label>
+                <span class="text-center text-danger" asp-validation-for="PhoneNumber"></span>
+            </div>*@
+
+            <div class="mb-2 form-floating">
+                <input class="form-control" asp-for="Link" />
+                <label asp-for="Link"></label>
+                <span class="text-center text-danger" asp-validation-for="Link"></span>
+            </div>
+
+            <div class="mb-2 form-floating">
+                <input class="form-control" asp-for="NegativeEmotStates" />
+                <label asp-for="NegativeEmotStates"></label>
+                <span class="text-center text-danger" asp-validation-for="NegativeEmotStates"></span>
+            </div>
+
+            <div class="mb-2 form-floating">
+                <input class="form-control" asp-for="Interests" />
+                <label asp-for="Interests"></label>
+                <span class="text-center text-danger" asp-validation-for="Interests"></span>
+            </div>
+
+            <div class="mb-2 form-floating">
+                <textarea class="form-control" asp-for="Note" id="floatingTextarea2" style="height: 100px"></textarea>
+                <label asp-for="Note"></label>
+            </div>
+
+            <div class="mb-2 form-floating">
+                <input asp-for="DateOfDetection" class="form-control" />
+                <label asp-for="DateOfDetection" class="control-label"></label>
+                <span asp-validation-for="DateOfDetection" class="text-danger"></span>
+            </div>
+
+            <div class="mb-2 form-floating">
+                <input type="date" asp-for="DateOfBirth" class="form-control" />
+                <label asp-for="DateOfBirth" class="control-label"></label>
+                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+            </div>
+
+            <div class="mb-2 form-check">
+                <input class="form-check-input" type="checkbox" asp-for="InformationTransferred">
+                <label class="form-check-label" asp-for="InformationTransferred"></label>
+            </div>
+
+
+
+                <button type="submit" class="mt-3 mb-3 btn btn-outline-success">Сохранить</button>
+        </div>
+        </form>
+</div>

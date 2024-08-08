@@ -1,0 +1,293 @@
+﻿@model WebPanel.Domain.ViewModels.FindViewModel
+@using WebPanel.Service.Implementations
+@using X.PagedList.Mvc.Core
+@using WebPanel.Domain.Enum
+@{
+    string red = "bg-danger";
+    string green = "bg-success";
+    string orange = "bg-warning";
+}
+
+<div class="element-part" style="max-width: 570px; min-height: 100px; margin-top: 40px;">
+
+    <h3 class="mb-3">
+        @ViewData["Title"] - Элементов @{
+            if (Model.Output != null && Model.Output.Count != 0)
+            {
+                @Model.Output.Count.ToString();
+            }
+        }
+    </h3>
+@*    @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                                {*@
+                <a role="button" class="me-2 btn btn-primary"
+                   href="/Table/@ViewData["TableId"]/Create">
+                    Добавить элемент <i class="bi bi-database-add"></i>
+                </a>
+                              @*  }*@
+
+                <button class="btn btn-primary me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
+                    Фильтрация элементов <i class="bi bi-funnel"></i>
+                </button>
+
+                 @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                                {
+                <a target="_blank" role="button" class="btn btn-success"
+                    href="/Export/Table/@ViewData["TableId"]">
+                    Скачать <i class="bi bi-cloud-download"></i>
+                </a>
+                                }
+ </div>
+
+
+<div class="element-part" style="min-height: 100px; margin-top: 40px;">
+    <h2>Список элементов</h2>
+    <div class="file-container" style="justify-content: center;">
+    @if (Model.Output != null && Model?.Output.Count != 0)
+    @foreach (var item in Model?.Output)
+    {
+            string needColor = "bg-success";
+            switch (item.Color)
+            {
+                case Colors.Red:
+                    needColor = red;
+                    break;
+
+                case Colors.Green:
+                    needColor = green;
+                    break;
+
+                case Colors.Yellow:
+                    needColor = orange;
+                    break;
+            }
+
+                <div class="card m-4" style="width: 18rem; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.4);">
+                <div class="card-header @needColor"></div>
+                <div class="card-body ">
+                    <h5 class="card-title long-text">@item.FullName</h5>
+                    <p class="card-text truncate-text">@item?.Note</p>
+
+                    <div class="row">
+                    <div class="btn-group" role="group">
+                            @if (User.IsInRole("Admin"))
+                                {
+                                    <a role="button" class="btn btn-outline-danger" 
+                                    onclick="openModal(@item.TableId,@item.Id)">
+                                        Удалить
+                                    </a>
+                                    <a role="button" class="btn btn-outline-secondary"
+                                    href="/Table/@ViewData["TableId"]/Edit?elementId=@item.Id">
+                                        Изменить
+                                    </a>
+                                }
+                            </div>
+                    </div>
+                    <div>
+                    <a href="/Table/@ViewData["TableId"]/@item.Id" class="card-link text-secondary">Открыть полную информацию</a>
+                    </div>
+                </div>
+
+                <div class="card-footer text-body-secondary">
+                            <p class="fw-bold mb-0" >
+                                @item.OwnerFullName
+                            </p>
+                </div>
+            </div>
+
+    }
+
+</div>
+    
+    <nav aria-label="Page navigation example">
+        @if (Model.Output != null)
+        {
+            <ul class="pagination">
+
+                <li class="page-item @(Model.Output.HasPreviousPage ? "" : "disabled")">
+                    <a class="page-link" href="@Url.Action("Get", new
+            {
+                tableId = Model.TableId,
+                pageNumber = Model.Output.PageNumber - 1,
+                pageSize = Model.PageSize 
+            })">Назад</a>
+                </li>
+
+                @for (int i = 1; i <= Model.Output.PageCount; i++)
+                {
+
+                    <li class="page-item @(i == Model.Output.PageNumber ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("Get", new
+                {
+                    tableId = Model.TableId,
+                    pageNumber = i,
+                    pageSize = Model.PageSize // передайте размер страницы
+                })">@i</a>
+                    </li>
+
+                }
+
+            <li class="page-item @(Model.Output.HasNextPage ? "" : "disabled")">
+                <a class="page-link" href="@Url.Action("Get", new
+            {
+                tableId = Model.TableId,
+                pageNumber = Model.Output.PageNumber + 1,
+                pageSize = Model.PageSize 
+            })">Вперёд</a>
+            </li>
+        </ul>
+        }
+    </nav>
+</div>
+
+
+
+
+<div class="modal fade" role="dialog" id="deleteConfirmationModal" aria-labelledby="deleteConfirmationModal" aria-hidden="true" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Подтверждение удаления</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Вы точно хотите удалить элемент таблицы?
+                <p>Вы уверены, что хотите удалить элемент с Id: <span id="elementId"></span>?</p>
+                <div id="testData"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Отмена</button>
+                <a role="button" class="btn btn-outline-danger" id="deleteButton")>
+                    Удалить
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel" style="width: 450px;">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasExampleLabel">Фильтрация элементов</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form id="filterForm" method="get" asp-route-tableId="@Model.TableId" asp-action="Get" enctype="multipart/form-data">
+            
+            <div class="form-floating mb-2">
+                <input class="form-control" asp-for="Id" />
+                <label asp-for="Id"></label>
+            </div>
+
+            <div class="form-floating mb-2">
+                <input class="form-control" asp-for="Name" />
+                <label asp-for="Name"></label>
+            </div>
+
+            <div class="mb-2 row g-2 ">
+
+                <div class="col-md">
+                    <div class="form-floating">
+                        <input class="form-control" asp-for="City" />
+                        <label asp-for="City"></label>
+                    </div>
+                </div>
+
+                <div class="col-md">
+                    <div class="form-floating">
+                        <select class="form-select" asp-for="Gender">
+                            <option value="0">Не выбран</option>
+                            <option value="1">Мужской</option>
+                            <option value="2">Женский</option>
+                        </select>
+                        <label asp-for="Gender"></label>
+                    </div>
+                </div>
+
+                <div class="col-md">
+                    <div class="form-floating">
+                        <select class="form-select" asp-for="Color">
+                            <option value="404">Не выбран</option>
+                            <option value="0">Красный</option>
+                            <option value="1">Зелёный</option>
+                            <option value="2">Жёлтый</option>
+                        </select>
+                        <label asp-for="Color"></label>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="form-floating mb-2">
+                <input class="form-control" asp-for="PhoneNumber" />
+                <label asp-for="PhoneNumber"></label>
+            </div>
+
+            <div class="form-floating mb-2">
+                <input class="form-control" asp-for="NegativeEmotStates" />
+                <label asp-for="NegativeEmotStates"></label>
+            </div>
+
+            <div class="form-floating mb-2">
+                <input class="form-control" asp-for="Interests" />
+                <label asp-for="Interests"></label>
+            </div>
+
+            <div class="mb-2 form-check">
+                <input class="form-check-input" type="checkbox" asp-for="InformationTransferred">
+                <label class="form-check-label" asp-for="InformationTransferred"></label>
+            </div>
+
+            <div class="mb-2 form-floating">
+                <input type="date" asp-for="DateOfDetection" class="form-control" />
+                <label asp-for="DateOfDetection" class="control-label"></label>
+                <span asp-validation-for="DateOfDetection" class="text-danger"></span>
+            </div>
+
+            <div class="mb-2 form-floating">
+                <input type="date" asp-for="DateOfChanges" class="form-control" />
+                <label asp-for="DateOfChanges" class="control-label"></label>
+                <span asp-validation-for="DateOfChanges" class="text-danger"></span>
+            </div>
+
+            <div class="mb-2 form-floating">
+                <input type="date" asp-for="DateOfBirth" class="form-control" />
+                <label asp-for="DateOfBirth" class="control-label"></label>
+                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Применить фильтры</button>
+            <button type="button" class="btn btn-outline-danger" onclick="clearForm()" >Очистить форму</button>
+        </form>
+    </div>
+</div>
+
+
+
+<script>
+    function openModal(tableId, elementId) {
+        var deleteButton = document.getElementById('deleteButton');
+        deleteButton.href =  '/Table/' + tableId + '/Delete/' + elementId; // Устанавливаем значение уникального идентификатора в href кнопки "Удалить"
+        // href="Url.Action("action","controller","")
+
+        $('#elementId').text(elementId); // Устанавливаем значение уникального идентификатора внутри модального окна
+        $('#deleteConfirmationModal').modal('show'); // Открываем модальное окно
+    }
+
+    function clearForm() {
+        var form = document.getElementById("filterForm");
+        var elements = form.elements;
+
+        for (var i = 0; i < elements.length; i++) {
+            var field = elements[i];
+
+            // Сбросить значение только для полей, которые не являются readonly или disabled
+            if (!field.readOnly && !field.disabled) {
+                field.value = "";
+            }
+        }
+    }
+</script>
+
+
